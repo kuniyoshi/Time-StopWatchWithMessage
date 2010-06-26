@@ -2,5 +2,4 @@ Changes
 Makefile.PL
 MANIFEST
 README
-t/Time-StopWatch-Log.t
-lib/Time/StopWatch/Log.pm
+lib/Time/StopWatchWithMessage.pm

@@ -17,7 +17,7 @@ sleep 1;
 
 $watch->store( "bbb" );
 
-foreach my $log_ref ( $watch->fetch_tidy ) {
+foreach my $log_ref ( $watch->fetch ) {
     say join " - ", @{ $log_ref }{ qw( message time ) };
 }
 

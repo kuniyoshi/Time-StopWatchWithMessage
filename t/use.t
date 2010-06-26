@@ -1,3 +1,3 @@
 use Test::More tests => 1;
-BEGIN { use_ok('Time::StopWatch::Log') };
+BEGIN { use_ok('Time::StopWatchWithMessage') };
 

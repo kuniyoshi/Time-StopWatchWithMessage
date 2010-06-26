@@ -1,6 +1,6 @@
-Revision history for Perl extension Time::StopWatch::Log.
+Revision history for Perl extension Time::StopWatchWithMessage.
 
 0.01  Sat Jun  5 16:02:55 2010
 	- original version; created by h2xs 1.23 with options
-		-Xan Time::StopWatch::Log
+		-Xan Time::StopWatchWithMessage
 
