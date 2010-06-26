@@ -7,17 +7,17 @@ use open ":utf8";
 use open ":std";
 use feature qw( say switch );
 use Data::Dumper;
-use Time::StopWatch::Log;
+use Time::StopWatchWithMessage;
+use Time::HiRes qw( sleep );
 
-my $watch = Time::StopWatch::Log->new;
+my $watch = Time::StopWatchWithMessage->new;
 
-$watch->store( "aaaa" );
+$watch->start;
 
-sleep 1;
+sleep rand;
 
-$watch->store( "bbb" );
+$watch->stop->start( "some" );
 
-foreach my $log_ref ( $watch->fetch ) {
-    say join " - ", @{ $log_ref }{ qw( message time ) };
-}
+$watch->stop;
 
+$watch->output;

@@ -2,48 +2,83 @@ package Time::StopWatchWithMessage;
 
 use strict;
 use warnings;
-use Time::HiRes qw/gettimeofday tv_interval/;
+use Time::HiRes qw( gettimeofday  tv_interval );
 
 our $VERSION = '0.01';
 
 sub new {
-    my $class   = shift;
-    my $message = shift || "Start watching.";
-    my @logs;
+    my $class = shift;
 
-    push @logs, { time => [ gettimeofday ], message => $message };
-
-    return bless \@logs, $class;
+    return bless [ ], $class;
 }
 
-sub store {
+sub start {
     my $self    = shift;
-    my $message = shift; 
+    my $message = shift || __PACKAGE__ . ">>> Start watching.";
 
     push @{ $self }, { time => [ gettimeofday ], message => $message };
 
-    return $self->[0];
+    return $self;
 }
 
-sub fetch {
+sub stop {
     my $self = shift;
-    my @logs;
+    my $time = [ gettimeofday ];
 
-    my $previsous_ref = $self->[0];
+    my $previous = pop @{ $self };
+    $previous->{time} = tv_interval( $previous->{time}, $time );
 
-    CALCULATE_TV_INTERVAL:
-    foreach my $log_ref ( @{ $self } ) {
-        push @logs, {
-            time    => tv_interval( $log_ref->{time}, $previsous_ref->{time} ),
-            message => $log_ref->{message},
-        };
+    push @{ $self }, $previous;
+
+    return $self;
+}
+
+sub _output {
+    my $self = shift;
+    my $FH   = shift;
+
+    require List::Util;
+
+    my $sum = List::Util::sum( map { $_->{time} } @{ $self } );
+
+    OUTPUT_ALL_WATCHES:
+    while ( defined ( my $watch_ref = shift @{ $self } ) ) {
+        my $output = sprintf "%s - %f/%f = %f[%%]\n",
+            $watch_ref->{message},
+            $watch_ref->{time},
+            $sum,
+            $watch_ref->{time} / $sum * 100;
+
+        print { $FH } $output;
     }
 
-    return wantarray ? @logs : \@logs;
+    return;
+}
+
+sub output {
+    my $self = shift;
+    my $FH   = shift || *STDERR;
+
+    return $self->_output( $FH );
+}
+
+sub print {
+    my $self = shift;
+
+    return $self->_output( *STDOUT );
+}
+
+sub warn {
+    my $self = shift;
+
+    return $self->_output( *STDERR );
 }
 
 1;
+
 __END__
+=encoding utf8
+
 =head1 NAME
 
 Time::StopWatchWithMessage - Calculate a interval between Previous and Current with a message.
@@ -53,22 +88,24 @@ Time::StopWatchWithMessage - Calculate a interval between Previous and Current w
   use Time::StopWatchWithMessage;
   my $watch = Time::StopWatchWithMessage->new;
 
-  sleep 1;
+  $watch->start( "Initialize." );
+  do_initialize( );
+  $watch->stop;
 
-  $watch->store( "This may take one second." );
-
+  $watch->start( "Doing something." );
   do_something( );
+  $watch->stop->start( "Finalize." );
+  do_finalize( );
+  $watch->stop;
 
-  $watch->store( "do_something took: " );
-
-  foreach my $log_ref ( $watch->fetch ) {
-      say join " - ", @{ $log_ref }{ qw( message time ) };
-  }
+  $watch->warn;
 
 =head1 DESCRIPTION
 
 You can use Time::StopWatch.  This module likes it.
 This is used to record a message.
+
+Note, this module hasn't care overhead of self executing.
 
 =head2 EXPORT
 
@@ -78,19 +115,25 @@ None.
 
 =over
 
-=item store
+=item start
 
-Stores a array reference of gettimeofday and a message.
+Starts watching time.
 
-=item fetch
+=item stop
 
-Returns a list, it includes array reference from gettimeofday
-by Time::HiRes.
+Stops watching time.
 
-=item fetch_tidy
+=item warn
 
-Returns a list, it includes array reference from tv_interval
-by Time::HiRes.
+Prints the result to STDERR.
+
+=item print
+
+Prints the result to STDOUT.
+
+=item output
+
+Prints the result to file handle.
 
 =back
 
