@@ -10,6 +10,9 @@ use Data::Dumper;
 use Time::StopWatchWithMessage;
 use Time::HiRes qw( sleep );
 
+open my $FH, ">res.out"
+    or die $!;
+
 my $watch = Time::StopWatchWithMessage->new;
 
 $watch->start;
@@ -20,4 +23,7 @@ $watch->stop->start( "some" );
 
 $watch->stop;
 
-$watch->output;
+$watch->output( $FH );
+
+close $FH
+    or die $!;

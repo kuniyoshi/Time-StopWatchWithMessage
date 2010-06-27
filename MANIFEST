@@ -3,3 +3,5 @@ Makefile.PL
 MANIFEST
 README
 lib/Time/StopWatchWithMessage.pm
+t/a-use.t
+t/b-can.t
