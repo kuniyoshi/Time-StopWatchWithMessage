@@ -143,6 +143,8 @@ Prints the result to file handle.
 
 =item Time::StopWatch
 
+=item Devel::Profile
+
 =back
 
 =head1 AUTHOR
