@@ -1,29 +1,24 @@
 #!/usr/bin/perl
-
+use 5.10.0;
 use utf8;
 use strict;
 use warnings;
-use open ":utf8";
-use open ":std";
-use feature qw( say switch );
-use Data::Dumper;
-use Time::StopWatchWithMessage;
+use open qw( :utf8 :std );
+use Readonly qw( Readonly );
+use Data::Dumper qw( Dumper );
 use Time::HiRes qw( sleep );
+use lib "lib";
+use Time::StopWatchWithMessage;
 
-open my $FH, ">res.out"
-    or die $!;
+Readonly my $COUNT => 10;
 
 my $watch = Time::StopWatchWithMessage->new;
 
-$watch->start;
+foreach my $index ( 1 .. $COUNT ) {
+    $watch->start( "run $index times." );
+    sleep rand;
+    $watch->stop;
+}
 
-sleep rand;
+$watch->warn;
 
-$watch->stop->start( "some" );
-
-$watch->stop;
-
-$watch->output( $FH );
-
-close $FH
-    or die $!;

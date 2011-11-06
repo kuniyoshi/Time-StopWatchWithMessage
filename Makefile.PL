@@ -1,7 +1,6 @@
 use 5.008000;
 use ExtUtils::MakeMaker;
 
-
 WriteMakefile(
     NAME              => 'Time::StopWatchWithMessage',
     VERSION_FROM      => 'lib/Time/StopWatchWithMessage.pm',
