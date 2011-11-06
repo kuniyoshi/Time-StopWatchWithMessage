@@ -1,5 +1,9 @@
 Revision history for Perl extension Time::StopWatchWithMessage.
 
+0.04  Sun Nov  6 22:21:39 JST 2011
+    - Can report realtime if needed.
+    - Fix a bug that repots bud time when user don't call stop.
+    - Improve reports format.
 0.03  Sun Nov  6 17:42:14 JST 2011
     - Change package layout
 0.02  Sun Aug 29 18:54:39 2010

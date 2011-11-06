@@ -1,20 +1,33 @@
 package Time::StopWatchWithMessage;
-
 use strict;
 use warnings;
 use Time::HiRes qw( gettimeofday  tv_interval );
 
-our $VERSION = '0.02';
+our $VERSION     = "0.04";
+our $IS_REALTIME = 0;
+our $LENGTH      = 3;
 
 sub new {
     my $class = shift;
-
+    my %param = @_;
+    
+    if ( my $bool = $param{is_realtime} ) {
+        $IS_REALTIME = $bool;
+    }
+    
+    if ( my $length = $param{length} ) {
+        $LENGTH = $length;
+    }
+    
     return bless [ ], $class;
 }
 
 sub start {
     my $self    = shift;
     my $message = shift || __PACKAGE__ . ">>> Start watching.";
+
+    $self->stop
+        if $self->_does_stop_need;
 
     push @{ $self }, { time => [ gettimeofday ], message => $message };
 
@@ -30,24 +43,43 @@ sub stop {
 
     push @{ $self }, $previous;
 
+    if ( $IS_REALTIME ) {
+        warn sprintf "%s - %.${LENGTH}f[s]\n", $previous->{message}, $previous->{time};
+    }
+
     return $self;
+}
+
+sub _does_stop_need {
+    my $self = shift;
+    return @{ $self } && ref $self->[-1]{time} eq ref [ ];
 }
 
 sub _output {
     my $self = shift;
     my $FH   = shift;
 
+    $self->stop
+        if $self->_does_stop_need;
+
     require List::Util;
 
-    my $sum = List::Util::sum( map { $_->{time} } @{ $self } );
+    my $sum    = List::Util::sum( map { $_->{time} } @{ $self } );
+    my $max    = List::Util::max( map { $_->{time} } @{ $self } );
+    my %length = (
+        time    => List::Util::max( map { length int $_->{time} } @{ $self } ),
+        message => List::Util::max( map { length $_->{message} }  @{ $self } ),
+    );
 
     OUTPUT_ALL_WATCHES:
     while ( defined ( my $watch_ref = shift @{ $self } ) ) {
-        my $output = sprintf "%s - %f/%f = %f[%%]\n",
+        my $output = sprintf(
+            "%$length{message}s - %$length{time}.${LENGTH}f[s] / %$length{time}.${LENGTH}f[s] = %$length{time}.${LENGTH}f[%%]\n",
             $watch_ref->{message},
             $watch_ref->{time},
             $sum,
-            $watch_ref->{time} / $sum * 100;
+            $watch_ref->{time} / $sum * 100,
+        );
 
         print { $FH } $output;
     }
@@ -62,17 +94,9 @@ sub output {
     return $self->_output( $FH );
 }
 
-sub print {
-    my $self = shift;
+sub print { shift->_output( *STDOUT ) }
 
-    return $self->_output( *STDOUT );
-}
-
-sub warn {
-    my $self = shift;
-
-    return $self->_output( *STDERR );
-}
+sub warn { shift->_output( *STDERR ) }
 
 1;
 
@@ -81,12 +105,12 @@ __END__
 
 =head1 NAME
 
-Time::StopWatchWithMessage - Calculate a interval between Previous and Current with a message.
+Time::StopWatchWithMessage - Calculate a interval between Previous and Current with a message
 
 =head1 SYNOPSIS
 
   use Time::StopWatchWithMessage;
-  my $watch = Time::StopWatchWithMessage->new;
+  my $watch = Time::StopWatchWithMessage->new( is_realtime => 0, length => 3 );
 
   $watch->start( "Initialize." );
   do_initialize( );
@@ -96,9 +120,7 @@ Time::StopWatchWithMessage - Calculate a interval between Previous and Current w
   do_something( );
   $watch->stop->start( "Finalize." );
   do_finalize( );
-  $watch->stop;
-
-  $watch->warn;
+  $watch->stop->warn;
 
 =head1 DESCRIPTION
 
@@ -110,6 +132,20 @@ Note, this module hasn't care overhead of self executing.
 =head2 EXPORT
 
 None.
+
+=head2 PARAMETERS
+
+=over
+
+=item $IS_REALTIME
+
+Reports message when stop is called.
+
+=item $LENGTH
+
+Specify length of number which in the report.
+
+=back
 
 =head2 METHODS
 
