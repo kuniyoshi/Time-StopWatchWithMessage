@@ -1,26 +1,13 @@
 package Time::StopWatchWithMessage;
 use strict;
 use warnings;
-use Time::HiRes qw( gettimeofday  tv_interval );
+use Time::HiRes qw( gettimeofday tv_interval );
 
-our $VERSION     = "0.04";
+our $VERSION     = "0.05";
 our $IS_REALTIME = 0;
 our $LENGTH      = 3;
 
-sub new {
-    my $class = shift;
-    my %param = @_;
-    
-    if ( my $bool = $param{is_realtime} ) {
-        $IS_REALTIME = $bool;
-    }
-    
-    if ( my $length = $param{length} ) {
-        $LENGTH = $length;
-    }
-    
-    return bless [ ], $class;
-}
+sub new { bless [ ], shift }
 
 sub start {
     my $self    = shift;
@@ -72,7 +59,7 @@ sub _output {
     );
 
     OUTPUT_ALL_WATCHES:
-    while ( defined ( my $watch_ref = shift @{ $self } ) ) {
+    while ( defined( my $watch_ref = shift @{ $self } ) ) {
         my $output = sprintf(
             "%$length{message}s - %$length{time}.${LENGTH}f[s] / %$length{time}.${LENGTH}f[s] = %$length{time}.${LENGTH}f[%%]\n",
             $watch_ref->{message},
@@ -110,7 +97,10 @@ Time::StopWatchWithMessage - Calculate a interval between Previous and Current w
 =head1 SYNOPSIS
 
   use Time::StopWatchWithMessage;
-  my $watch = Time::StopWatchWithMessage->new( is_realtime => 0, length => 3 );
+  $Time::StopWatchWithMessage::IS_REALTIME = 0;
+  $Time::StopWatchWithMessage::LENGTH      = 3;
+
+  my $watch = Time::StopWatchWithMessage->new;
 
   $watch->start( "Initialize." );
   do_initialize( );
@@ -133,17 +123,17 @@ Note, this module hasn't care overhead of self executing.
 
 None.
 
-=head2 PARAMETERS
+=head2 GLOBALS
 
 =over
 
-=item $IS_REALTIME
+=item $Time::StopWatchWithMessage::IS_REALTIME
 
-Reports message when stop is called.
+Reports message per stop.
 
-=item $LENGTH
+=item $Time::StopWatchWithMessage::LENGTH
 
-Specify length of number which in the report.
+Specifies a length of after floating point of the report.
 
 =back
 
