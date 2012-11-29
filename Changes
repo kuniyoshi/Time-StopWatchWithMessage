@@ -1,5 +1,9 @@
 Revision history for Perl extension Time::StopWatchWithMessage.
 
+0.06  Fri Nov 30 01:51:54 JST 2012
+    - Add collapse for watching in loop.
+0.05  Fri Nov 30 01:31:09 JST 2012
+    - Tidy up code, and document.
 0.04  Sun Nov  6 22:21:39 JST 2011
     - Can report realtime if needed.
     - Fix a bug that repots bud time when user don't call stop.

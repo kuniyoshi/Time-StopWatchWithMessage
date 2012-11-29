@@ -1,9 +1,8 @@
 Changes
+lib/Time/StopWatchWithMessage.pm
 Makefile.PL
 MANIFEST
 README
-lib/Time/StopWatchWithMessage.pm
 t/01-use.t
 t/02-can.t
 t/03-new.t
-

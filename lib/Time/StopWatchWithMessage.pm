@@ -1,9 +1,11 @@
 package Time::StopWatchWithMessage;
 use strict;
 use warnings;
+use List::Util qw( sum max reduce );
+use List::MoreUtils qw( first_index );
 use Time::HiRes qw( gettimeofday tv_interval );
 
-our $VERSION     = "0.05";
+our $VERSION     = "0.06";
 our $IS_REALTIME = 0;
 our $LENGTH      = 3;
 
@@ -42,6 +44,29 @@ sub _does_stop_need {
     return @{ $self } && ref $self->[-1]{time} eq ref [ ];
 }
 
+sub collapse {
+    my $self = shift;
+
+    $self->stop
+        if $self->_does_stop_need;
+
+    my $watches_ref = reduce {
+        my $i = first_index { $_->{message} eq $b->{message} } @{ $a };
+
+        if ( $i >= 0 ) {
+            $a->[ $i ]{time} += $b->{time};
+            $a->[ $i ]{count}++;
+        }
+        else {
+            push @{ $a }, $b;
+        }
+
+        $a;
+    } ( [ ], @{ $self } );
+
+    return bless $watches_ref, ref $self;
+}
+
 sub _output {
     my $self = shift;
     my $FH   = shift;
@@ -49,26 +74,28 @@ sub _output {
     $self->stop
         if $self->_does_stop_need;
 
-    require List::Util;
-
-    my $sum    = List::Util::sum( map { $_->{time} } @{ $self } );
-    my $max    = List::Util::max( map { $_->{time} } @{ $self } );
+    my $sum    = sum( map { $_->{time} } @{ $self } );
+    my $max    = max( map { $_->{time} } @{ $self } );
     my %length = (
-        time    => List::Util::max( map { length int $_->{time} } @{ $self } ),
-        message => List::Util::max( map { length $_->{message} }  @{ $self } ),
+        time    => max( map { length int $_->{time} } @{ $self } ),
+        message => max( map { length $_->{message} }  @{ $self } ),
     );
 
     OUTPUT_ALL_WATCHES:
     while ( defined( my $watch_ref = shift @{ $self } ) ) {
         my $output = sprintf(
-            "%$length{message}s - %$length{time}.${LENGTH}f[s] / %$length{time}.${LENGTH}f[s] = %$length{time}.${LENGTH}f[%%]\n",
+            "%$length{message}s - %$length{time}.${LENGTH}f[s] / %$length{time}.${LENGTH}f[s] = %$length{time}.${LENGTH}f[%%]",
             $watch_ref->{message},
             $watch_ref->{time},
             $sum,
             $watch_ref->{time} / $sum * 100,
         );
 
-        print { $FH } $output;
+        if ( $watch_ref->{count} ) {
+            $output = join q{; }, $output, sprintf "%d times measured.", $watch_ref->{count} + 1;
+        }
+
+        print { $FH } $output, "\n";
     }
 
     return;
@@ -148,6 +175,12 @@ Starts watching time.
 =item stop
 
 Stops watching time.
+
+=item collapse
+
+Collapses message which has same message.
+
+This is useful when you call start, and stop in loop.
 
 =item warn
 

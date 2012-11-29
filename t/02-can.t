@@ -7,7 +7,7 @@ my $module = "Time::StopWatchWithMessage";
 my @methods = qw(
     new
     start  stop
-    _output  output  print  warn
+    collapse  _output  output  print  warn
 );
 
 eval "require $module"
