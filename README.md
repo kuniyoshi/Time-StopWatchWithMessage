@@ -38,34 +38,50 @@ None.
 GLOBALS
 =======
 
-* $Time::StopWatchWithMessage::IS_REALTIME
-    Reports message per stop.
+$Time::StopWatchWithMessage::IS_REALTIME
+----------------------------------------
 
-* $Time::StopWatchWithMessage::LENGTH
-    Specifies a length of after floating point of the report.
+Reports message per stop.
+
+$Time::StopWatchWithMessage::LENGTH
+-----------------------------------
+
+Specifies a length of after floating point of the report.
 
 METHODS
 =======
 
-* start
-    Starts watching time.
+start
+-----
 
-* stop
-    Stops watching time.
+Starts watching time.
 
-* collapse
-    Collapses message which has same message.
+stop
+----
 
-    This is useful when you call start, and stop in loop.
+Stops watching time.
 
-* warn
-    Prints the result to STDERR.
+collapse
+--------
 
-* print
-    Prints the result to STDOUT.
+Collapses message which has same message.
 
-* output
-    Prints the result to file handle.
+This is useful when you call start, and stop in loop.
+
+warn
+----
+
+Prints the result to STDERR.
+
+print
+-----
+
+Prints the result to STDOUT.
+
+output
+------
+
+Prints the result to file handle.
 
 SEE ALSO
 ========
