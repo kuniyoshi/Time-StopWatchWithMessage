@@ -119,7 +119,7 @@ __END__
 
 =head1 NAME
 
-Time::StopWatchWithMessage - Calculate a interval between Previous and Current with a message
+Time::StopWatchWithMessage - Measure a interval between Previous and Current with a message
 
 =head1 SYNOPSIS
 
